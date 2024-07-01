@@ -1,11 +1,7 @@
-import app from "./src/express";
+import mongoose from "mongoose";
+import { conf } from "./config/config";
+import app from "./src/app";
 
-const startServer=()=>{
-    const port=process.env.PORT||5000
-
-    app.listen(port,()=>{
-        console.log(`Server is running on port ${port}`)
-    })
-}
-
-startServer()
+    mongoose.connect(conf.MongoDBUrl).then(()=>app.listen(conf.port,()=>{
+        console.log(`Connection established on ${conf.port}`)
+    })).catch((error)=>console.log(error.message))

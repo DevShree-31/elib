@@ -1,7 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import createHttpError from "http-errors";
 import userModel from "./userModel";
-
+import bcrypt from "bcrypt"
+import { sign } from "jsonwebtoken";
+import { conf } from "../../config/config";
 const createUser=async (req:Request,res:Response,next:NextFunction)=>{
     const {name,email,password}=req.body
     //Validation
@@ -15,7 +17,15 @@ const createUser=async (req:Request,res:Response,next:NextFunction)=>{
         const error=createHttpError(400,"User Already exist")
         return next(error)
     }
-    res.json({message:"User Registered"});
+    const hashedPassword=await bcrypt.hash(password,10);
+    const newUser=await userModel.create({
+        name:name,
+        email:email,
+        password:hashedPassword
+    })
+    //Generate a JWT token on creation
+    const token=sign({sub:newUser._id},conf.jwtSecret as string,{expiresIn:'7d'})
+    res.json({acessToken:token});
 }
 
 
